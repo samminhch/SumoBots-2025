@@ -1,2 +1,5 @@
 # SumoBots-2025
-CometRobotics 2025 SumoBots code for Dohyo
+
+## Hardware Reference
+
+This program is written for Nathan's [A1-Andromeda](https://github.com/nathan-jw/A1-Andromeda) repository
