@@ -50,20 +50,20 @@ motor right_motor{0, 1};
  * Distance Sensors *
  ********************/
 
-// left, center, right
+// left, center, right sensors
 const uint8_t dist_sensors[] = {4, 3, 2};
 
 // DECISION TABLE
 // | left | center | right | left_motor | right_motor |
 // | ---- | ------ | ----- | ---------- | ----------- |
 // | 0    | 0      | 0     | MOTOR_MAX  | -MOTOR_MAX  |
-// | 0    | 0      | 1     | MOTOR_MAX  | MOTOR_LOW   |
-// | 0    | 1      | 0     | MOTOR_MAX  | MOTOR_MAX   |
-// | 0    | 1      | 1     | MOTOR_MAX  | MOTOR_MID   |
-// | 1    | 0      | 0     | MOTOR_MIN  | MOTOR_MAX   |
+// | 0    | 0      | 1     | MOTOR_MAX  |  MOTOR_LOW  |
+// | 0    | 1      | 0     | MOTOR_MAX  |  MOTOR_MAX  |
+// | 0    | 1      | 1     | MOTOR_MAX  |  MOTOR_MID  |
+// | 1    | 0      | 0     | MOTOR_MIN  |  MOTOR_MAX  |
 // | 1    | 0      | 1     | ---------- | ----------- |
-// | 1    | 1      | 0     | MOTOR_MID  | MOTOR_MAX   |
-// | 1    | 1      | 1     | MOTOR_MAX | MOTOR_MAX   |
+// | 1    | 1      | 0     | MOTOR_MID  |  MOTOR_MAX  |
+// | 1    | 1      | 1     | MOTOR_MAX  |  MOTOR_MAX  |
 const int8_t left_decision[]  = {100, 100, 100, 100, 33, 0, 50, 100};
 const int8_t right_decision[] = {-100, 33, 100, 50, 100, 0, 100, 100};
 
@@ -119,6 +119,12 @@ void motor_test()
     delay(5000);
 }
 
+/**
+ * @param m The motor to spin
+ * @param motor_percentage The percentage speed to spin the motor at. The valid
+ * range should be from -100 to 100, and will be constrained to that range.
+ * Negative numbers meant that the motor will spin backwards.
+ */
 void spin_motor(motor m, int8_t motor_percentage)
 {
     int speed_percentage =
