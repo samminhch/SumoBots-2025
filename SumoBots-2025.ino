@@ -4,7 +4,8 @@
 #define DEBUG
 
 #ifdef DEBUG
-    #define DPRINT(msg) Serial.print(msg);
+    #define DPRINT(msg)   Serial.print(msg);
+    #define DPRINTLN(msg) Serial.println(msg);
     #define OK_PRINT(msg)           \
         Serial.print(F("[OKAY] ")); \
         Serial.print(F(msg));
@@ -63,8 +64,8 @@ const uint8_t dist_sensors[] = {4, 3, 2};
 // | 1    | 0      | 1     | ---------- | ----------- |
 // | 1    | 1      | 0     | MOTOR_MID  | MOTOR_MAX   |
 // | 1    | 1      | 1     | MOTOR_MAX | MOTOR_MAX   |
-const uint8_t left_decision[] = { 100, 100, 100, 100, 33, 0, 50, 100};
-const uint8_t right_decision[] = { -100, 33, 100, 50, 100, 0, 100, 100};
+const int8_t left_decision[]  = {100, 100, 100, 100, 33, 0, 50, 100};
+const int8_t right_decision[] = {-100, 33, 100, 50, 100, 0, 100, 100};
 
 void setup()
 {
@@ -79,38 +80,50 @@ void setup()
     }
 }
 
-void loop() { 
-    // [info] i could care less about magic numbers rn i just need this to work rq
+void loop()
+{
+    // [info] i could care less about magic numbers rn i just need this to work
     int decision = 0;
-    for (int i = 3; i >= 0; i--) {
-        decision = digitalRead(dist_sensors[i]);
-        decision <<= 1;
+#ifdef DEBUG
+    DBG_PRINT("decision={ ");
+#endif
+    for (int i = 2; i >= 0; i--)
+    {
+        int sensor_input = digitalRead(dist_sensors[i]);
+        decision         = sensor_input * (1 << i);
+#ifdef DEBUG
+        DPRINT(sensor_input);
+        DPRINT(" ");
+#endif
     }
 
-    #ifdef DEBUG
-        DBG_PRINT("decision=");
-        DPRINT(decision);
-        DPRINT("\n");
-    #endif
     spin_motor(left_motor, left_decision[decision]);
     spin_motor(right_motor, right_decision[decision]);
+
+#ifdef DEBUG
+    DPRINTLN("}");
+    DBG_PRINT("left_decision=");
+    DPRINTLN(left_decision[decision]);
+    DBG_PRINT("right_decision=");
+    DPRINTLN(right_decision[decision]);
+#endif
 }
 
-void motor_test() {
+void motor_test()
+{
     spin_motor(left_motor, 100);
     spin_motor(right_motor, 100);
     delay(250);
     spin_motor(left_motor, 0);
     spin_motor(right_motor, 0);
     delay(5000);
-} 
-
+}
 
 void spin_motor(motor m, int8_t motor_percentage)
 {
     int speed_percentage =
         map(constrain(abs(motor_percentage), 0, 100), 0, 100, 0, MOTOR_MAX);
 
-        analogWrite(m.pin_forward, motor_percentage > 0 ? speed_percentage : 0);
-        analogWrite(m.pin_backward, motor_percentage < 0 ? speed_percentage : 0);
+    analogWrite(m.pin_forward, motor_percentage > 0 ? speed_percentage : 0);
+    analogWrite(m.pin_backward, motor_percentage < 0 ? speed_percentage : 0);
 }
