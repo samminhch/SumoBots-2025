@@ -53,24 +53,33 @@ motor right_motor{0, 1};
 // left, center, right sensors
 const uint8_t dist_sensors[] = {4, 3, 2};
 
-// DECISION TABLE
-// | left | center | right | left_motor | right_motor |
-// | ---- | ------ | ----- | ---------- | ----------- |
-// | 0    | 0      | 0     | MOTOR_MAX  | -MOTOR_MAX  |
-// | 0    | 0      | 1     | MOTOR_MAX  |  MOTOR_LOW  |
-// | 0    | 1      | 0     | MOTOR_MAX  |  MOTOR_MAX  |
-// | 0    | 1      | 1     | MOTOR_MAX  |  MOTOR_MID  |
-// | 1    | 0      | 0     | MOTOR_MIN  |  MOTOR_MAX  |
-// | 1    | 0      | 1     | ---------- | ----------- |
-// | 1    | 1      | 0     | MOTOR_MID  |  MOTOR_MAX  |
-// | 1    | 1      | 1     | MOTOR_MAX  |  MOTOR_MAX  |
-const int8_t left_decision[]  = {100, 100, 100, 100, 33, 0, 50, 100};
-const int8_t right_decision[] = {-100, 33, 100, 50, 100, 0, 100, 100};
+// Decision table for hunting alorithm:
+// | left | center | right | left_motor % | right_motor % |
+// | ---- | ------ | ----- | ------------ | ------------- |
+// | 0    | 0      | 0     | 50           | -50           |
+// | 0    | 0      | 1     | 66           |  33           |
+// | 0    | 1      | 0     | 100          |  100          |
+// | 0    | 1      | 1     | 66           |  50           |
+// | 1    | 0      | 0     | 33           |  66           |
+// | 1    | 0      | 1     | -50          |  50           | diff. spin so that we can tell
+// | 1    | 1      | 0     | 50           |  66           |
+// | 1    | 1      | 1     | 100          |  100          |
+// clang-format off
+const int8_t left_decision[]  = { 50, 66, 100, 66, 33, -50, 50, 100};
+const int8_t right_decision[] = {-50, 33, 100, 50, 66,  50, 66, 100};
+// clang-format on
+
+/****************
+ * Line Sensors *
+ ****************/
+const uint32_t max_analog_value = 1'023;
+const float ring_tolerance      = max_analog_value * 0.8;
+const uint32_t line_sensors[]   = {A4, A5};  // left, right sensors
 
 void setup()
 {
 #ifdef DEBUG
-    Serial.begin(9600);
+    Serial.begin(9'600);
 #endif
 
     // Set up digital pins
@@ -82,31 +91,51 @@ void setup()
 
 void loop()
 {
-    // [info] i could care less about magic numbers rn i just need this to work
-    int decision = 0;
+    // Get line sensor data
+    uint32_t left_result  = analogRead(line_sensors[0]);
+    uint32_t right_result = analogRead(line_sensors[1]);
+
 #ifdef DEBUG
-    DBG_PRINT("decision={ ");
+    DBG_PRINT("line_sensors={left: ");
+    DPRINT(left_result);
+    DPRINT(", right: ");
+    DPRINT(right_result);
+    DPRINTLN("}");
 #endif
-    for (int i = 2; i >= 0; i--)
+
+    if (left_result < ring_tolerance && right_result < ring_tolerance)
     {
-        int sensor_input = digitalRead(dist_sensors[i]);
-        decision         = sensor_input * (1 << i);
+        // stop motors if the robot is out of the ring
+        spin_motor(left_motor, 0);
+        spin_motor(right_motor, 0);
+    }
+    else
+    {
+        int decision = 0;
 #ifdef DEBUG
-        DPRINT(sensor_input);
-        DPRINT(" ");
+        DBG_PRINT("hunt_decision={ ");
+#endif
+        for (int i = 2; i >= 0; i--)
+        {
+            int sensor_input  = digitalRead(dist_sensors[i]);
+            decision         += sensor_input * (1 << i);
+#ifdef DEBUG
+            DPRINT(sensor_input);
+            DPRINT(" ");
+#endif
+        }
+
+        spin_motor(left_motor, left_decision[decision]);
+        spin_motor(right_motor, right_decision[decision]);
+
+#ifdef DEBUG
+        DPRINTLN("}");
+        DBG_PRINT("left_decision=");
+        DPRINTLN(left_decision[decision]);
+        DBG_PRINT("right_decision=");
+        DPRINTLN(right_decision[decision]);
 #endif
     }
-
-    spin_motor(left_motor, left_decision[decision]);
-    spin_motor(right_motor, right_decision[decision]);
-
-#ifdef DEBUG
-    DPRINTLN("}");
-    DBG_PRINT("left_decision=");
-    DPRINTLN(left_decision[decision]);
-    DBG_PRINT("right_decision=");
-    DPRINTLN(right_decision[decision]);
-#endif
 }
 
 void motor_test()
@@ -116,7 +145,7 @@ void motor_test()
     delay(250);
     spin_motor(left_motor, 0);
     spin_motor(right_motor, 0);
-    delay(5000);
+    delay(5'000);
 }
 
 /**
