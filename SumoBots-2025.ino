@@ -2,35 +2,7 @@
  * debug things *
  ****************/
 #define DEBUG
-
-#ifdef DEBUG
-    #define DPRINT(msg)   Serial.print(msg);
-    #define DPRINTLN(msg) Serial.println(msg);
-    #define OK_PRINT(msg)           \
-        Serial.print(F("[OKAY] ")); \
-        Serial.print(F(msg));
-    #define OK_PRINTLN(msg)         \
-        Serial.print(F("[OKAY] ")); \
-        Serial.println(F((msg)));
-    #define ERR_PRINT(msg)           \
-        Serial.print(F("[ERROR] ")); \
-        Serial.print(F((msg)));
-    #define ERR_PRINTLN(msg)         \
-        Serial.print(F("[ERROR] ")); \
-        Serial.println(F((msg)));
-    #define DBG_PRINT(msg)           \
-        Serial.print(F("[DEBUG] ")); \
-        Serial.print(F((msg)));
-    #define DBG_PRINTLN(msg)         \
-        Serial.print(F("[DEBUG] ")); \
-        Serial.println(F((msg)));
-    #define WARN_PRINT(msg)         \
-        Serial.print(F("[WARN] ")); \
-        Serial.print(F((msg)));
-    #define WARN_PRINTLN(msg)       \
-        Serial.print(F("[WARN] ")); \
-        Serial.println(F((msg)));
-#endif
+#include "debug_printing.h"
 
 /**********
  * Motors *
@@ -61,9 +33,12 @@ const uint8_t dist_sensors[] = {4, 3, 2};
 // | 0    | 1      | 0     | 100          |  100          |
 // | 0    | 1      | 1     | 66           |  50           |
 // | 1    | 0      | 0     | 33           |  66           |
-// | 1    | 0      | 1     | -50          |  50           | diff. spin so that we can tell
-// | 1    | 1      | 0     | 50           |  66           |
+// | 1    | 0      | 1     | -50          |  50           |
+// | 1    | 1      | 0     | 50           |  66           | 
 // | 1    | 1      | 1     | 100          |  100          |
+// The spin is different on 101 vs. 000 to tell apart the different
+// status codes the robot is experiencing
+
 // clang-format off
 const int8_t left_decision[]  = { 50, 66, 100, 66, 33, -50, 50, 100};
 const int8_t right_decision[] = {-50, 33, 100, 50, 66,  50, 66, 100};
@@ -95,13 +70,11 @@ void loop()
     uint32_t left_result  = analogRead(line_sensors[0]);
     uint32_t right_result = analogRead(line_sensors[1]);
 
-#ifdef DEBUG
     DBG_PRINT("line_sensors={left: ");
     DPRINT(left_result);
     DPRINT(", right: ");
     DPRINT(right_result);
     DPRINTLN("}");
-#endif
 
     if (left_result < ring_tolerance && right_result < ring_tolerance)
     {
@@ -112,29 +85,23 @@ void loop()
     else
     {
         int decision = 0;
-#ifdef DEBUG
         DBG_PRINT("hunt_decision={ ");
-#endif
         for (int i = 2; i >= 0; i--)
         {
             int sensor_input  = digitalRead(dist_sensors[i]);
             decision         += sensor_input * (1 << i);
-#ifdef DEBUG
             DPRINT(sensor_input);
             DPRINT(" ");
-#endif
         }
 
         spin_motor(left_motor, left_decision[decision]);
         spin_motor(right_motor, right_decision[decision]);
 
-#ifdef DEBUG
-        DPRINTLN("}");
         DBG_PRINT("left_decision=");
-        DPRINTLN(left_decision[decision]);
-        DBG_PRINT("right_decision=");
-        DPRINTLN(right_decision[decision]);
-#endif
+        DPRINT(left_decision[decision]);
+        DPRINT(", right_decision=");
+        DPRINT(right_decision[decision]);
+        DPRINTLN("}");
     }
 }
 
