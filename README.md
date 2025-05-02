@@ -2,7 +2,7 @@
 
 ## Hardware Reference
 
-This program is written for Nathan's [A1-Andromeda](https://github.com/nathan-jw/A1-Andromeda) repository
+This program is written for [Nathan's](https://github.com/nathan-jw) [A1-Andromeda](https://github.com/nathan-jw/A1-Andromeda) repository
 
 ## Pinout Diagram
 
@@ -18,3 +18,5 @@ This program is written for Nathan's [A1-Andromeda](https://github.com/nathan-jw
 | Left motor in 1     | `D10`        |
 | Start-stop module   | `D11`        |
 | Analog 3-7          | `A3` to `A7` |
+| Left line sensor    | `A4`         |
+| Right line sensor   | `A5`         |
