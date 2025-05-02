@@ -31,10 +31,10 @@ IndentPPDirectives: BeforeHash
 IndentWidth: 4
 InsertBraces: true
 # clang-format v16
-# InsertNewlineAtEOF: false
-# IntegerLiteralSeparator:
-#   Binary: 4
-#   Decimal: 3
+InsertNewlineAtEOF: false
+IntegerLiteralSeparator:
+  Binary: 4
+  Decimal: 3
 MaxEmptyLinesToKeep: 1
 PPIndentWidth: -1
 ReferenceAlignment: Right
