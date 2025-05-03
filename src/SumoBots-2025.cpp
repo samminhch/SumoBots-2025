@@ -73,9 +73,9 @@ void setup()
 
 #ifdef DEBUG
     Serial.begin(9'600);
-    WARN_PRINTLN("3 second delay in debug mode start");
+    WARN_PRINT("3 second delay in debug mode start\n");
     delay(3'000);
-    OK_PRINTLN("Debug printing start!");
+    OK_PRINT("Debug printing start!\n");
 #endif
 }
 
@@ -87,22 +87,19 @@ void attack()
     uint32_t left_result  = analogRead(line_sensors[0]);
     uint32_t right_result = analogRead(line_sensors[1]);
 
-    DBG_PRINT("line_sensors={left: ");
-    DPRINT(left_result);
-    DPRINT(", right: ");
-    DPRINT(right_result);
-    DPRINTLN("}");
+    DBG_PRINTF("line_sensors={left: %4ld, right: %4ld}; ", left_result,
+               right_result);
 
     if (left_result < ring_tolerance && right_result < ring_tolerance)
     {
         // Stop motors if the robot is out of the ring
         spin_motor(left_motor, 0);
         spin_motor(right_motor, 0);
+        DPRINTLN();
     }
     else
     {
         int decision = 0;
-        DBG_PRINT("hunt_decision={ ");
         for (int i = 2; i >= 0; i--)
         {
             int sensor_input  = digitalRead(dist_sensors[i]);
@@ -114,11 +111,10 @@ void attack()
         spin_motor(left_motor, left_decision[decision]);
         spin_motor(right_motor, right_decision[decision] * 0.7);
 
-        DBG_PRINT("left_decision=");
-        DPRINT(left_decision[decision]);
-        DPRINT(", right_decision=");
-        DPRINT(right_decision[decision]);
-        DPRINTLN("}");
+        DBG_PRINTF("hunt_decision={left: %d, right: %d};\n",
+                   left_decision[decision], right_decision[decision]);
+
+        Serial.printf("Hello, there!");
     }
 }
 
@@ -135,12 +131,11 @@ void sanity_test()
 void distance_sensor_test()
 {
     DBG_PRINT("dist_sensors={ ");
-    for (int i = 2; i >= 0; i--)
+    for (int i = 0; i < 3; i++)
     {
-        DPRINT(analogRead(dist_sensors[i]));
-        DPRINT(" ");
+        DPRINTF("%4d, ", analogRead(dist_sensors[i]));
     }
-    DPRINTLN("}");
+    DPRINT("}\n");
 }
 
 /**
