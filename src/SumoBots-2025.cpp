@@ -1,6 +1,9 @@
+#include <Arduino.h>
+
 /****************
  * debug things *
  ****************/
+// Comment out when competing
 #define DEBUG
 #include "debug_printing.h"
 
@@ -23,8 +26,9 @@ motor right_motor{0, 1};
  ********************/
 
 // left, center, right sensors
-const uint8_t dist_sensors[] = {4, 3, 2};
+const uint8_t dist_sensors[] = {A5, A6, A7};
 
+// harper: ignore
 // Decision table for hunting alorithm:
 // | left | center | right | left_motor % | right_motor % |
 // | ---- | ------ | ----- | ------------ | ------------- |
@@ -34,14 +38,14 @@ const uint8_t dist_sensors[] = {4, 3, 2};
 // | 0    | 1      | 1     | 66           |  50           |
 // | 1    | 0      | 0     | 33           |  66           |
 // | 1    | 0      | 1     | -50          |  50           |
-// | 1    | 1      | 0     | 50           |  66           | 
+// | 1    | 1      | 0     | 50           |  66           |
 // | 1    | 1      | 1     | 100          |  100          |
 // The spin is different on 101 vs. 000 to tell apart the different
 // status codes the robot is experiencing
 
 // clang-format off
-const int8_t left_decision[]  = { 50, 66, 100, 66, 33, -50, 50, 100};
-const int8_t right_decision[] = {-50, 33, 100, 50, 66,  50, 66, 100};
+const int8_t left_decision[]  = { 15, 25, 100, 25, 15, -15, 15, 100};
+const int8_t right_decision[] = {-15, 15, 100, 15, 20,  15, 25, 100};
 // clang-format on
 
 /****************
@@ -51,20 +55,32 @@ const uint32_t max_analog_value = 1'023;
 const float ring_tolerance      = max_analog_value * 0.8;
 const uint32_t line_sensors[]   = {A4, A5};  // left, right sensors
 
+/******************
+ * Helper Methods *
+ ******************/
+void attack();
+void sanity_test();
+void distance_sensor_test();
+void spin_motor(motor m, int8_t motor_percentage);
+
 void setup()
 {
-#ifdef DEBUG
-    Serial.begin(9'600);
-#endif
-
     // Set up digital pins
     for (uint8_t pin : dist_sensors)
     {
         pinMode(pin, INPUT);
     }
+
+#ifdef DEBUG
+    WARN_PRINTLN("5 second delay in debug mode start");
+    delay(5'000);
+    OK_PRINTLN("Debug printing start!");
+#endif
 }
 
-void loop()
+void loop() { attack(); }
+
+void attack()
 {
     // Get line sensor data
     uint32_t left_result  = analogRead(line_sensors[0]);
@@ -78,7 +94,7 @@ void loop()
 
     if (left_result < ring_tolerance && right_result < ring_tolerance)
     {
-        // stop motors if the robot is out of the ring
+        // Stop motors if the robot is out of the ring
         spin_motor(left_motor, 0);
         spin_motor(right_motor, 0);
     }
@@ -95,7 +111,7 @@ void loop()
         }
 
         spin_motor(left_motor, left_decision[decision]);
-        spin_motor(right_motor, right_decision[decision]);
+        spin_motor(right_motor, right_decision[decision] * 0.7);
 
         DBG_PRINT("left_decision=");
         DPRINT(left_decision[decision]);
@@ -105,14 +121,25 @@ void loop()
     }
 }
 
-void motor_test()
+void sanity_test()
 {
-    spin_motor(left_motor, 100);
-    spin_motor(right_motor, 100);
-    delay(250);
-    spin_motor(left_motor, 0);
-    spin_motor(right_motor, 0);
-    delay(5'000);
+    Serial.begin(9'600);
+    for (int i = 0; i < 16; i++)
+    {
+        Serial.println(i);
+        delay(1'000);
+    }
+}
+
+void distance_sensor_test()
+{
+    DBG_PRINT("dist_sensors={ ");
+    for (int i = 2; i >= 0; i--)
+    {
+        DPRINT(analogRead(dist_sensors[i]));
+        DPRINT(" ");
+    }
+    DPRINTLN("}");
 }
 
 /**

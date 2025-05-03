@@ -1,2 +1,0 @@
-default_fqbn: STMicroelectronics:stm32:GenF0
-default_port: /dev/ttyACM0
