@@ -72,8 +72,9 @@ void setup()
     }
 
 #ifdef DEBUG
-    WARN_PRINTLN("5 second delay in debug mode start");
-    delay(5'000);
+    Serial.begin(9'600);
+    WARN_PRINTLN("3 second delay in debug mode start");
+    delay(3'000);
     OK_PRINTLN("Debug printing start!");
 #endif
 }

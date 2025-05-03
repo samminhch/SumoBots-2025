@@ -4,30 +4,14 @@
     #ifdef DEBUG
         #define DPRINT(msg)   Serial.print(msg);
         #define DPRINTLN(msg) Serial.println(msg);
-        #define OK_PRINT(msg)           \
-            Serial.print(F("[OKAY] ")); \
-            Serial.print(F(msg));
-        #define OK_PRINTLN(msg)         \
-            Serial.print(F("[OKAY] ")); \
-            Serial.println(F((msg)));
-        #define ERR_PRINT(msg)           \
-            Serial.print(F("[ERROR] ")); \
-            Serial.print(F((msg)));
-        #define ERR_PRINTLN(msg)         \
-            Serial.print(F("[ERROR] ")); \
-            Serial.println(F((msg)));
-        #define DBG_PRINT(msg)           \
-            Serial.print(F("[DEBUG] ")); \
-            Serial.print(F((msg)));
-        #define DBG_PRINTLN(msg)         \
-            Serial.print(F("[DEBUG] ")); \
-            Serial.println(F((msg)));
-        #define WARN_PRINT(msg)         \
-            Serial.print(F("[WARN] ")); \
-            Serial.print(F((msg)));
-        #define WARN_PRINTLN(msg)       \
-            Serial.print(F("[WARN] ")); \
-            Serial.println(F((msg)));
+        #define OK_PRINT(msg) Serial.printf("[OKAY] %s", msg);
+        #define OK_PRINTLN(msg) Serial.printf("[OKAY] %s\n", msg);
+        #define ERR_PRINT(msg) Serial.printf("[ERROR] %s", msg);
+        #define ERR_PRINTLN(msg) Serial.printf("[ERROR] %s\n", msg);
+        #define DBG_PRINT(msg) Serial.printf("[DEBUG] %s", msg);
+        #define DBG_PRINTLN(msg) Serial.printf("[DEBUG] %s\n", msg);
+        #define WARN_PRINT(msg) Serial.printf("[WARN] %s", msg);
+        #define WARN_PRINTLN(msg) Serial.printf("[WARN] %s\n", msg);
     #else
         #define DPRINT(msg)
         #define DPRINTLN(msg)
