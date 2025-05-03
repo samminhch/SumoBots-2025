@@ -1,4 +1,10 @@
 import os
 
-os.environ["COMPILATIONDB_INCLUDE_TOOLCHAIN"] = "True"
-os.environ["COMPILATIONDB_PATH"] = "compile_commands.json"
+Import("env")
+
+# include toolchain paths
+env.Replace(COMPILATIONDB_INCLUDE_TOOLCHAIN=True)
+
+# override compilation DB path
+env.Replace(COMPILATIONDB_PATH=os.path.join("$BUILD_DIR", "compile_commands.json"))
+
